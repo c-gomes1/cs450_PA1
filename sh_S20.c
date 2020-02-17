@@ -75,6 +75,25 @@ runcmd(struct cmd *cmd)
     ecmd = (struct execcmd*)cmd;
     if(ecmd->argv[0] == 0)
       exit();
+
+// Implementation of the "nonohup" command
+    if (strcmp(ecmd->argv[0],"nonohup") == 0) { // If "nonohup" is the inputted command
+      int i = 0; // Loop Variable
+      for(i=1; i < MAXARGS; i++){ // Loop over argv list of the parsed command
+        // Move all argv start & end pointers in the list to remove
+        // the word "nonohup" from the inputted command
+        ecmd->argv[i-1] = ecmd->argv[i];
+        ecmd->eargv[i-1] = ecmd->eargv[i];
+      }
+      // Fork & Execute the command (excluding the word "nonohup") in a child process
+      if(fork1() == 0){
+        exec(ecmd->argv[0], ecmd->argv);
+      }
+      // Parent process exits without waiting for the child process to complete (bg process)
+      exit();
+    }
+// End of "nonohup" implementation
+
     exec(ecmd->argv[0], ecmd->argv);
     printf(2, "exec %s failed\n", ecmd->argv[0]);
     break;
